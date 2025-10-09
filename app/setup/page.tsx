@@ -75,10 +75,7 @@ export default function SetupPage() {
       });
 
       await updateUserProfile(user.uid, newTeamDoc.id);
-      
-      // Instead of redirecting, show the success screen with the new ID
       setNewlyCreatedTeamId(newTeamDoc.id);
-
     } catch (err) {
       console.error(err);
       setError("Failed to create team. Please try again.");
@@ -104,7 +101,6 @@ export default function SetupPage() {
       });
 
       await updateUserProfile(user.uid, teamDoc.id);
-
       router.push("/");
     } catch (err) {
       console.error(err);
@@ -116,25 +112,28 @@ export default function SetupPage() {
     if (newlyCreatedTeamId) {
       navigator.clipboard.writeText(newlyCreatedTeamId);
       setIsCopied(true);
-      setTimeout(() => setIsCopied(false), 2000); // Reset after 2 seconds
+      setTimeout(() => setIsCopied(false), 2000);
     }
   };
   
   if (loading) {
-    return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
+    return (
+      <main className="auth-container">
+        <p className="text-muted-foreground">Loading...</p>
+      </main>
+    );
   }
 
-  // If a team was just created, show the success card
   if (newlyCreatedTeamId) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-gray-100 dark:bg-gray-900">
-        <Card className="w-full max-w-md">
-          <CardHeader>
-            <CardTitle>Team Created Successfully!</CardTitle>
-            <CardDescription>Share this ID with your team members to let them join.</CardDescription>
+      <main className="auth-container">
+        <Card className="auth-card w-full max-w-md">
+          <CardHeader className="auth-card-header">
+            <CardTitle className="auth-card-title">Team Created Successfully!</CardTitle>
+            <CardDescription className="auth-card-description">Share this ID with your team members to let them join.</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="p-3 bg-gray-100 dark:bg-gray-800 rounded-md text-center font-mono text-lg tracking-widest">
+          <CardContent className="auth-card-content space-y-4">
+            <div className="p-3 bg-muted rounded-md text-center font-mono text-lg tracking-widest">
               {newlyCreatedTeamId}
             </div>
             <Button onClick={handleCopyToClipboard} className="w-full">
@@ -147,27 +146,26 @@ export default function SetupPage() {
              </Button>
           </CardFooter>
         </Card>
-      </div>
+      </main>
     );
   }
 
-  // Otherwise, show the create/join tabs
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-100 dark:bg-gray-900">
+    <main className="auth-container">
       <Tabs defaultValue="create" className="w-full max-w-md">
         <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger value="create">Create Team</TabsTrigger>
           <TabsTrigger value="join">Join Team</TabsTrigger>
         </TabsList>
         <TabsContent value="create">
-          <Card>
-            <CardHeader>
-              <CardTitle>Create a new team</CardTitle>
-              <CardDescription>
+          <Card className="auth-card !shadow-none !border-t-0 rounded-t-none">
+            <CardHeader className="auth-card-header">
+              <CardTitle className="auth-card-title">Create a new team</CardTitle>
+              <CardDescription className="auth-card-description">
                 Give your team a name to get started. You'll get an ID to share.
               </CardDescription>
             </CardHeader>
-            <CardContent>
+            <CardContent className="auth-card-content">
               <form onSubmit={handleCreateTeam}>
                 <div className="grid gap-4">
                   <div className="grid gap-2">
@@ -178,6 +176,7 @@ export default function SetupPage() {
                       required
                       value={teamName}
                       onChange={(e) => setTeamName(e.target.value)}
+                      className="input-field"
                     />
                   </div>
                   <Button type="submit" className="w-full">Create Team</Button>
@@ -187,14 +186,14 @@ export default function SetupPage() {
           </Card>
         </TabsContent>
         <TabsContent value="join">
-          <Card>
-            <CardHeader>
-              <CardTitle>Join an existing team</CardTitle>
-              <CardDescription>
+          <Card className="auth-card !shadow-none !border-t-0 rounded-t-none">
+            <CardHeader className="auth-card-header">
+              <CardTitle className="auth-card-title">Join an existing team</CardTitle>
+              <CardDescription className="auth-card-description">
                 Enter the Team ID you received from your team creator.
               </CardDescription>
             </CardHeader>
-            <CardContent>
+            <CardContent className="auth-card-content">
               <form onSubmit={handleJoinTeam}>
                 <div className="grid gap-4">
                   <div className="grid gap-2">
@@ -205,6 +204,7 @@ export default function SetupPage() {
                       required
                       value={joinTeamId}
                       onChange={(e) => setJoinTeamId(e.target.value)}
+                      className="input-field"
                     />
                   </div>
                    {error && <p className="text-sm text-red-500">{error}</p>}
@@ -215,7 +215,7 @@ export default function SetupPage() {
           </Card>
         </TabsContent>
       </Tabs>
-    </div>
+    </main>
   );
 }
 

@@ -16,20 +16,16 @@ export default function HomePage() {
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       if (currentUser) {
-        // User is logged in, now check their team status in Firestore
         const userDocRef = doc(db, "users", currentUser.uid);
         const userDoc = await getDoc(userDocRef);
 
         if (userDoc.exists() && userDoc.data().teamId) {
-          // User has a team, so we can let them see the dashboard
           setUser(currentUser);
         } else {
-          // User has no team, redirect to the setup page
           router.push("/setup");
-          return; // Stop further execution in this path
+          return;
         }
       } else {
-        // User is not logged in
         setUser(null);
       }
       setLoading(false);
@@ -47,39 +43,43 @@ export default function HomePage() {
     }
   };
   
-  // Display a loading screen while we check auth and team status
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        Loading...
-      </div>
+      <main className="auth-container">
+        <p className="text-muted-foreground">Loading...</p>
+      </main>
     );
   }
 
-  // If the user is authenticated and has a team, show the dashboard
   if (user) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-screen">
-        <h1 className="text-2xl mb-4">Welcome to the Dashboard!</h1>
-        <p className="mb-6">You are logged in as {user.email}.</p>
-        <Button onClick={handleSignOut}>Sign Out</Button>
-      </div>
+      <main className="auth-container">
+        <div className="text-center">
+          <h1 className="h1">Welcome to the Dashboard!</h1>
+          <p className="p mt-4">You are logged in as {user.email}.</p>
+          <Button onClick={handleSignOut} className="mt-6">Sign Out</Button>
+        </div>
+      </main>
     );
   }
 
-  // If the user is not logged in, show a welcome message and login/signup links
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen">
-      <h1 className="text-2xl mb-4">Welcome to LazyDevs MVP</h1>
-      <div className="space-x-4">
-        <Link href="/login">
-          <Button>Login</Button>
-        </Link>
-        <Link href="/signup">
-          <Button variant="outline">Sign Up</Button>
-        </Link>
-      </div>
-    </div>
+    <main className="auth-container">
+        <div className="auth-card text-center">
+            <div className="auth-card-header">
+                <h1 className="auth-card-title">Welcome to LazyDevs MVP</h1>
+                <p className="auth-card-description pt-2">Please sign in or create an account to continue.</p>
+            </div>
+            <div className="auth-card-content flex gap-4 justify-center">
+                <Link href="/login">
+                    <Button>Login</Button>
+                </Link>
+                <Link href="/signup">
+                    <Button variant="outline">Sign Up</Button>
+                </Link>
+            </div>
+        </div>
+    </main>
   );
 }
 

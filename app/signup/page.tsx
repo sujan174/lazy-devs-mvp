@@ -7,7 +7,6 @@ import {
   Card,
   CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
@@ -27,7 +26,6 @@ export default function SignupPage() {
     e.preventDefault();
     setError(null);
 
-    // Basic password validation
     if (password.length < 6) {
       setError("Password must be at least 6 characters long.");
       return;
@@ -48,15 +46,15 @@ export default function SignupPage() {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-100 dark:bg-gray-900">
-      <Card className="w-full max-w-sm">
-        <CardHeader>
-          <CardTitle className="text-xl">Sign Up</CardTitle>
-          <CardDescription>
-            Enter your information to create an account
+    <main className="auth-container">
+      <Card className="auth-card">
+        <CardHeader className="auth-card-header">
+          <CardTitle className="auth-card-title">Create an Account</CardTitle>
+          <CardDescription className="auth-card-description">
+            Enter your information to get started.
           </CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="auth-card-content">
           <form onSubmit={handleSignUp} className="grid gap-4">
             <div className="grid gap-2">
               <Label htmlFor="email">Email</Label>
@@ -67,6 +65,7 @@ export default function SignupPage() {
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
+                className="input-field"
               />
             </div>
             <div className="grid gap-2">
@@ -77,6 +76,7 @@ export default function SignupPage() {
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
+                className="input-field"
               />
             </div>
             {error && <p className="text-red-500 text-sm">{error}</p>}
@@ -84,15 +84,15 @@ export default function SignupPage() {
               Create an account
             </Button>
           </form>
-          <div className="mt-4 text-center text-sm">
+          <div className="mt-4 text-center text-sm text-muted-foreground">
             Already have an account?{" "}
-            <Link href="/login" className="underline">
+            <Link href="/login" className="link">
               Sign in
             </Link>
           </div>
         </CardContent>
       </Card>
-    </div>
+    </main>
   );
 }
 
