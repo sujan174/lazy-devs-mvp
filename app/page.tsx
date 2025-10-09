@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import { User, onAuthStateChanged, signOut } from "firebase/auth";
 import { doc, getDoc } from "firebase/firestore";
 import { auth, db } from "@/lib/firebase";
-import { Button } from "@/components/ui/button";
 import Link from "next/link";
 
 export default function HomePage() {
@@ -16,16 +15,20 @@ export default function HomePage() {
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       if (currentUser) {
+        // User is logged in, check if they have completed the new setup
         const userDocRef = doc(db, "users", currentUser.uid);
         const userDoc = await getDoc(userDocRef);
 
-        if (userDoc.exists() && userDoc.data().teamId) {
+        if (userDoc.exists()) {
+          // The user document exists, meaning they have a voiceprint. Show the dashboard.
           setUser(currentUser);
         } else {
+          // The user document does NOT exist. Redirect to the new voiceprint setup page.
           router.push("/setup");
-          return;
+          return; 
         }
       } else {
+        // User is not logged in
         setUser(null);
       }
       setLoading(false);
@@ -45,41 +48,35 @@ export default function HomePage() {
   
   if (loading) {
     return (
-      <main className="auth-container">
-        <p className="text-muted-foreground">Loading...</p>
-      </main>
+      <div className="auth-container">
+        <h1 className="text-xl">Loading...</h1>
+      </div>
     );
   }
 
   if (user) {
     return (
-      <main className="auth-container">
-        <div className="text-center">
-          <h1 className="h1">Welcome to the Dashboard!</h1>
-          <p className="p mt-4">You are logged in as {user.email}.</p>
-          <Button onClick={handleSignOut} className="mt-6">Sign Out</Button>
+      <div className="dashboard-container">
+        <div className="auth-card text-center">
+            <h1 className="auth-card-title">Welcome to the Dashboard!</h1>
+            <p className="auth-card-description">You are logged in as {user.email}.</p>
+            <button onClick={handleSignOut} className="btn-secondary w-full mt-4">Sign Out</button>
         </div>
-      </main>
+      </div>
     );
   }
 
+  // Fallback for non-logged in users (though they should be redirected by the effect)
   return (
-    <main className="auth-container">
-        <div className="auth-card text-center">
-            <div className="auth-card-header">
-                <h1 className="auth-card-title">Welcome to LazyDevs MVP</h1>
-                <p className="auth-card-description pt-2">Please sign in or create an account to continue.</p>
+    <div className="auth-container">
+         <div className="auth-card text-center">
+            <h1 className="auth-card-title">Welcome to LazyDevs MVP</h1>
+            <div className="flex gap-4 mt-6">
+                <Link href="/login" className="btn-primary w-full text-center">Login</Link>
+                <Link href="/signup" className="btn-secondary w-full text-center">Sign Up</Link>
             </div>
-            <div className="auth-card-content flex gap-4 justify-center">
-                <Link href="/login">
-                    <Button>Login</Button>
-                </Link>
-                <Link href="/signup">
-                    <Button variant="outline">Sign Up</Button>
-                </Link>
-            </div>
-        </div>
-    </main>
+      </div>
+    </div>
   );
 }
 
