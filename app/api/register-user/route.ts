@@ -7,7 +7,7 @@ import { NextResponse } from 'next/server';
  * @returns A promise that resolves to a voiceprint embedding (a float array).
  */
 async function generateVoiceprint(audioFile: File, name: string): Promise<number[]> {
-  const pythonServiceUrl = process.env.NEXT_PUBLIC_VOICEPRINT_SERVICE_URL;
+  const pythonServiceUrl = process.env.VOICEPRINT_SERVICE_URL;
   if (!pythonServiceUrl) {
     throw new Error("VOICEPRINT_SERVICE_URL is not configured in .env.local");
   }
