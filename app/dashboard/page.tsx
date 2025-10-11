@@ -1,6 +1,7 @@
 "use client";
-import { MeetingsPane } from "@/components/dashboard/MeetingsPane";
-import { ChatInput } from "@/components/dashboard/ChatInput";
+
+import { MeetingsPane } from "../../components/dashboard/MeetingsPane";
+import { ChatInput } from "../../components/dashboard/ChatInput";
 
 export default function DashboardPage() {
   return (
