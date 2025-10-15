@@ -5,7 +5,6 @@ import Link from "next/link";
 import { signOut } from "firebase/auth";
 import { auth } from "@/lib/firebase";
 import { useRouter } from "next/navigation";
-import { useUploadModal } from "@/contexts/UploadModalContext";
 
 interface SidebarProps {
   isCollapsed: boolean;
@@ -25,7 +24,7 @@ export function Sidebar({ isCollapsed }: SidebarProps) {
   const navItems = [
     { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
     { name: "Team", href: "#", icon: User },
-    { name: "Settings", href: "#", icon: Settings },
+    { name: "Settings", href: "/dashboard/settings", icon: Settings },
   ];
 
   return (

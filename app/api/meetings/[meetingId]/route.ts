@@ -5,13 +5,13 @@
 import { NextResponse } from 'next/server';
 import { fetchMeetingById, updateMeetingSpeakers, deleteMeeting } from '@/lib/firebase-admin';
 
-// GET - Fetch a single meeting
+// GET - Fetch a single meeting with full transcript
 export async function GET(
   request: Request,
-  { params }: { params: { meetingId: string } }
+  { params }: { params: Promise<{ meetingId: string }> }
 ) {
   try {
-    const { meetingId } = params;
+    const { meetingId } = await params;
 
     if (!meetingId) {
       return NextResponse.json(
@@ -29,7 +29,25 @@ export async function GET(
       );
     }
 
-    return NextResponse.json({ meeting });
+    // The meeting object should already contain:
+    // - id, title, teamId
+    // - transcript (array of utterances)
+    // - speakerMap, unresolvedSpeakers
+    // - createdAt, updatedAt, durationMs
+    // - totalSegments, totalSpeakers, unresolvedCount
+    
+    console.log(`Fetched meeting ${meetingId}: ${meeting.title}, ${meeting.transcript?.length || 0} segments`);
+
+    return NextResponse.json({ 
+      meeting,
+      // Optional: Add metadata for easier client-side handling
+      meta: {
+        hasTranscript: Array.isArray(meeting.transcript) && meeting.transcript.length > 0,
+        segmentCount: meeting.transcript?.length || 0,
+        speakerCount: meeting.totalSpeakers || 0,
+        unresolvedCount: meeting.unresolvedCount || 0
+      }
+    });
   } catch (error) {
     console.error('Error fetching meeting:', error);
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
@@ -57,11 +75,27 @@ export async function PATCH(
       );
     }
 
+    // Validate that speakerResolutions has the correct format
+    // Expected: { "Unknown Speaker 1": "John Doe", "Unknown Speaker 2": "Jane Smith" }
+    const isValid = Object.entries(speakerResolutions).every(
+      ([key, value]) => typeof key === 'string' && typeof value === 'string'
+    );
+
+    if (!isValid) {
+      return NextResponse.json(
+        { error: 'speakerResolutions must be a map of string to string' },
+        { status: 400 }
+      );
+    }
+
+    console.log(`Updating speakers for meeting ${meetingId}:`, speakerResolutions);
+
     await updateMeetingSpeakers(meetingId, speakerResolutions);
 
     return NextResponse.json({ 
       success: true,
-      message: 'Speakers updated successfully' 
+      message: 'Speakers updated successfully',
+      updatedSpeakers: Object.keys(speakerResolutions).length
     });
   } catch (error) {
     console.error('Error updating meeting speakers:', error);
@@ -87,6 +121,8 @@ export async function DELETE(
         { status: 400 }
       );
     }
+
+    console.log(`Deleting meeting ${meetingId}`);
 
     await deleteMeeting(meetingId);
 

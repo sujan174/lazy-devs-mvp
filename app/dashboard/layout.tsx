@@ -3,12 +3,31 @@
 import { useState, useEffect, ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import { onAuthStateChanged, User } from "firebase/auth";
-import { auth } from "@/lib/firebase"; 
-import { Sidebar } from "../../components/dashboard/Sidebar"; 
-import { Header } from "../../components/dashboard/Header"; 
+import { auth, db } from "@/lib/firebase";
+import { doc, getDoc } from "firebase/firestore";
+import { Sidebar } from "@/components/dashboard/Sidebar";
+import { Header } from "@/components/dashboard/Header";
 import { Loader2 } from "lucide-react";
+import { useUploadModal } from "@/contexts/UploadModalProvider";
+import { UploadModal } from "@/components/modals/UploadModal";
 
-export default function DashboardLayout({ children }: { children: ReactNode }) {
+
+// Helper component to render the modal and fetch necessary data
+function DashboardModalController({ user }: { user: User }) {
+    const { isUploadModalOpen } = useUploadModal();
+    
+    if (!isUploadModalOpen) return null;
+
+    // The UploadModal component now accepts the user object
+    // and handles fetching its own teamId internally.
+    return <UploadModal user={user} />;
+}
+
+export default function DashboardLayout({
+  children,
+}: {
+  children: ReactNode;
+}) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [isSidebarCollapsed, setSidebarCollapsed] = useState(false);
@@ -53,6 +72,8 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
           {children}
         </main>
       </div>
+       {/* This helper component will manage rendering the modal */}
+       <DashboardModalController user={user} />
     </div>
   );
 }

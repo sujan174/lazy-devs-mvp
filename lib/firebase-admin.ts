@@ -1,31 +1,63 @@
+// ==============================================
+// lib/firebase-admin.ts (SERVER-SIDE)
+// ==============================================
+
 import admin from 'firebase-admin';
 
 if (!admin.apps.length) {
-  admin.initializeApp({
-    credential: admin.credential.cert({
-      projectId: process.env.FIREBASE_PROJECT_ID,
-      clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-      privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
-    }),
-  });
+  try {
+    // 1. Get the Base64 encoded service account from environment variables
+    const serviceAccountBase64 = process.env.FIREBASE_SERVICE_ACCOUNT;
+
+    if (!serviceAccountBase64) {
+      throw new Error('FIREBASE_SERVICE_ACCOUNT_BASE64 environment variable is not set. Please add it to your .env.local file.');
+    }
+
+    // 2. Decode the Base64 string back into a standard string
+    const serviceAccountJson = Buffer.from(serviceAccountBase64, 'base64').toString('utf-8');
+    
+    // 3. Parse the string into a JSON object
+    const serviceAccount = JSON.parse(serviceAccountJson);
+
+    // 4. Initialize Firebase Admin with the decoded credentials
+    admin.initializeApp({
+      credential: admin.credential.cert(serviceAccount),
+    });
+
+    console.log('✅ Firebase Admin initialized successfully using Base64 credentials.');
+  } catch (error) {
+    console.error('🔥 Firebase Admin initialization error:', error);
+  }
 }
 
-export const db = admin.firestore();
+export const adminDb = admin.firestore();
+export const adminAuth = admin.auth();
+
 
 // ============================================
 // VOICEPRINT FUNCTIONS
 // ============================================
 
 /**
- * Fetches all voiceprints for team members
- * Returns a map of { userName: voiceprint[] }
+ * Converts a float array into base64-encoded Float32 bytes
  */
-export async function fetchTeamVoiceprints(teamId: string): Promise<Record<string, number[]>> {
+function floatArrayToBase64(floatArr: number[]): string {
+  const buffer = Buffer.alloc(floatArr.length * 4);
+  for (let i = 0; i < floatArr.length; i++) {
+    buffer.writeFloatLE(floatArr[i], i * 4);
+  }
+  return buffer.toString('base64');
+}
+
+/**
+ * Fetches all voiceprints for team members
+ * Returns a map of { userName: voiceprint_base64 }
+ */
+export async function fetchTeamVoiceprints(teamId: string): Promise<Record<string, string>> {
   try {
     console.log(`📊 Fetching voiceprints for team: ${teamId}`);
-    
-    // Get all users that belong to this team
-    const usersSnapshot = await db
+
+    const usersSnapshot = await adminDb
       .collection('users')
       .where('teamId', '==', teamId)
       .get();
@@ -35,17 +67,17 @@ export async function fetchTeamVoiceprints(teamId: string): Promise<Record<strin
       return {};
     }
 
-    const voiceprints: Record<string, number[]> = {};
-    
+    const voiceprints: Record<string, string> = {};
+
     usersSnapshot.forEach((doc) => {
       const userData = doc.data();
       const userName = userData.name;
       const voiceprint = userData.voiceprint;
 
-      // Only include users who have enrolled their voiceprint
       if (voiceprint && Array.isArray(voiceprint) && voiceprint.length > 0) {
-        voiceprints[userName] = voiceprint;
-        console.log(`  ✅ Found voiceprint for: ${userName} (${voiceprint.length} dimensions)`);
+        const encoded = floatArrayToBase64(voiceprint);
+        voiceprints[userName] = encoded;
+        console.log(`  ✅ Encoded voiceprint for: ${userName} (${voiceprint.length} floats)`);
       } else {
         console.log(`  ⚠️ No voiceprint for: ${userName}`);
       }
@@ -58,6 +90,7 @@ export async function fetchTeamVoiceprints(teamId: string): Promise<Record<strin
     throw new Error(`Failed to fetch voiceprints for team ${teamId}`);
   }
 }
+
 
 // ============================================
 // MEETING FUNCTIONS
@@ -92,7 +125,7 @@ export async function saveMeetingToDB(meetingData: MeetingData): Promise<string>
   try {
     console.log(`💾 Saving meeting: ${meetingData.meetingTitle}`);
 
-    const meetingRef = db.collection('meetings').doc();
+    const meetingRef = adminDb.collection('meetings').doc();
     const meetingId = meetingRef.id;
 
     const meetingDocument = {
@@ -130,7 +163,7 @@ export async function saveMeetingToDB(meetingData: MeetingData): Promise<string>
  */
 export async function fetchTeamMeetings(teamId: string): Promise<any[]> {
   try {
-    const meetingsSnapshot = await db
+    const meetingsSnapshot = await adminDb
       .collection('meetings')
       .where('teamId', '==', teamId)
       .orderBy('createdAt', 'desc')
@@ -153,7 +186,7 @@ export async function fetchTeamMeetings(teamId: string): Promise<any[]> {
  */
 export async function fetchMeetingById(meetingId: string): Promise<any | null> {
   try {
-    const meetingDoc = await db.collection('meetings').doc(meetingId).get();
+    const meetingDoc = await adminDb.collection('meetings').doc(meetingId).get();
 
     if (!meetingDoc.exists) {
       return null;
@@ -177,7 +210,7 @@ export async function updateMeetingSpeakers(
   speakerResolutions: Record<string, string>
 ): Promise<void> {
   try {
-    const meetingRef = db.collection('meetings').doc(meetingId);
+    const meetingRef = adminDb.collection('meetings').doc(meetingId);
     const meetingDoc = await meetingRef.get();
 
     if (!meetingDoc.exists) {
@@ -224,10 +257,11 @@ export async function updateMeetingSpeakers(
  */
 export async function deleteMeeting(meetingId: string): Promise<void> {
   try {
-    await db.collection('meetings').doc(meetingId).delete();
+    await adminDb.collection('meetings').doc(meetingId).delete();
     console.log(`✅ Deleted meeting: ${meetingId}`);
   } catch (error) {
     console.error('Error deleting meeting:', error);
     throw new Error('Failed to delete meeting');
   }
 }
+

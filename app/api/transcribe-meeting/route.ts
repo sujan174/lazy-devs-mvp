@@ -65,15 +65,12 @@ async function processWithTranscriptionService(
   }
 }
 
-export async function POST(request: Request) {
-  console.log("--- ✅ /api/transcribe-meeting endpoint reached! ---");
-  
+export async function POST(request: Request) {  
   try {
     const formData = await request.formData();
     const audioFile = formData.get('audioFile') as File;
     const voiceprintsJson = formData.get('voiceprints') as string;
 
-    // Validate required fields
     if (!audioFile) {
       console.error("❌ Missing audioFile in request");
       return NextResponse.json(
@@ -90,7 +87,6 @@ export async function POST(request: Request) {
       );
     }
 
-    // Validate audio file
     if (audioFile.size === 0) {
       console.error("❌ Audio file is empty");
       return NextResponse.json(
@@ -99,7 +95,6 @@ export async function POST(request: Request) {
       );
     }
 
-    // Parse and validate voiceprints
     let enrolledVoiceprints: Record<string, number[]>;
     try {
       enrolledVoiceprints = JSON.parse(voiceprintsJson);
