@@ -1,0 +1,83 @@
+[
+  {
+    "action": "comment",
+    "id": "86d0bj51m",
+    "data": {
+      "comment": "Code review complete. Minor change requested for extra error handling on invalid zip codes."
+    }
+  },
+  {
+    "action": "comment",
+    "id": "86d0bj51m",
+    "data": {
+      "comment": "Commitment: Fix for error handling will be pushed this afternoon."
+    }
+  },
+  {
+    "action": "update",
+    "id": "86d0bj8z8",
+    "data": {
+      "status": "complete"
+    }
+  },
+  {
+    "action": "comment",
+    "id": "86d0cue7j",
+    "data": {
+      "comment": "Scope confirmed: UI should include sections for medical history, insurance info, and personal therapy goals."
+    }
+  },
+  {
+    "action": "comment",
+    "id": "86d0emtjw",
+    "data": {
+      "comment": "Meeting discussion summary: One proposal is to extend the main user database schema for structure and easy querying. The alternative proposal is to use a flexible JSON blob for faster implementation and easier form modifications. A decision has been deferred and needs to be made offline."
+    }
+  },
+  {
+    "action": "update",
+    "id": "86d0bj464",
+    "data": {
+      "dependencies": {
+        "add": [
+          "86d0cuegn"
+        ]
+      }
+    }
+  },
+  {
+    "action": "comment",
+    "id": "86d0bj464",
+    "data": {
+      "comment": "This task is blocked pending completion of the Therapist profile data API (86d0cuegn)."
+    }
+  },
+  {
+    "action": "meta",
+    "data": {
+      "type": "add_member",
+      "name": "Anika",
+      "details": "Role: QA Engineer. Joining next week to take over manual testing."
+    }
+  },
+  {
+    "action": "meta",
+    "data": {
+      "type": "process_change",
+      "name": "Code Review Feedback Process",
+      "details": "New rule: All code review feedback must be submitted as comments on the GitHub pull request. Feedback via Slack or email is no longer permitted."
+    }
+  },
+  {
+    "action": "flag",
+    "data": {
+      "summary": "Ambiguous task reassignment for 'Design the multi-step booking & payment flow' (86d0bjby9).",
+      "context": "The project manager stated they are reassigning task 86d0bjby9 from 'Shrujan' to 'Sujan'. However, the project board already lists 'Sujan H' as the assignee, and 'Shrujan' is not a recognized user in the system with a user ID. The intended action is unclear and requires clarification.",
+      "parties": [
+        "Rupesh",
+        "Sujan H",
+        "Shrujan"
+      ]
+    }
+  }
+]
